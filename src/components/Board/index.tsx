@@ -1,20 +1,23 @@
-import { Board } from "./types/common";
-import Card from "./Card";
+import { Board } from "../../types/common";
+import Card from "../Card";
 import styled from "styled-components";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { useRef, useState } from "react";
-import { useOnClickOutside } from "hooks/useClickOutside";
+import CardForm from "components/Card/CardForm";
 
 const Board = ({
   board,
   index,
   onAddCard,
+  onEditCard,
 }: {
   board: Board;
   index: number;
   onAddCard: (boardId: string, card: Card) => void;
+  onEditCard: (boardId: string, card: Card) => void;
 }) => {
   const [newCard, setNewCard] = useState<Card | null>(null);
+
   const boardRef = useRef<HTMLDivElement>(null);
 
   const handleClickAddCard = () => {
@@ -37,7 +40,29 @@ const Board = ({
     setNewCard(null);
   };
 
-  useOnClickOutside(boardRef, handleSaveNewCard);
+  const handleSaveEditCard = (card: Card) => {
+    onEditCard(board.id, card);
+  };
+
+  const handleNewCardInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!newCard) {
+      return;
+    }
+    setNewCard({
+      ...newCard,
+      text: e.target.value,
+    });
+  };
+
+  const renderInput = (newCard: Card) => {
+    return (
+      <CardForm
+        value={newCard.text}
+        onChange={handleNewCardInputChange}
+        onCloseForm={handleSaveNewCard}
+      />
+    );
+  };
 
   return (
     <div ref={boardRef}>
@@ -50,57 +75,36 @@ const Board = ({
             <h2 {...dragProvided.dragHandleProps}>{board.name}</h2>
             <Droppable droppableId={board.id} type="card">
               {(provided, snapshot) => (
-                <div
+                <DropArea
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  style={{
-                    padding: 10,
-                    flexGrow: 1,
-                    backgroundColor: snapshot.isDraggingOver
-                      ? "skyblue"
-                      : "inherit",
-                  }}
+                  $isDraggingOver={snapshot.isDraggingOver}
                 >
                   {board.cards.map((card, index) => (
-                    <Card key={card.id} card={card} index={index} />
+                    <Card
+                      key={card.id}
+                      card={card}
+                      index={index}
+                      onSaveEditCard={handleSaveEditCard}
+                    />
                   ))}
 
+                  {newCard && renderInput(newCard)}
                   {provided.placeholder}
-
-                  {newCard && (
-                    <Card
-                      card={newCard}
-                      index={board.cards.length}
-                      isEdit
-                      onChange={(card) => {
-                        setNewCard(card);
-                      }}
-                    />
-                  )}
-                </div>
+                </DropArea>
               )}
             </Droppable>
-            {!newCard ? (
-              <button onClick={handleClickAddCard}>Add Card</button>
-            ) : (
-              <div
-                style={{
-                  display: "flex",
-                  padding: 10,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    marginLeft: "auto",
-                    gap: 12,
-                  }}
-                >
-                  <button onClick={handleCancelNewCard}>Cancel</button>
+
+            <ButtonContainer>
+              {newCard ? (
+                <>
                   <button onClick={handleSaveNewCard}>Save</button>
-                </div>
-              </div>
-            )}
+                  <button onClick={handleCancelNewCard}>Cancel</button>
+                </>
+              ) : (
+                <button onClick={handleClickAddCard}>Add Card</button>
+              )}
+            </ButtonContainer>
           </BoardWrapper>
         )}
       </Draggable>
@@ -124,8 +128,18 @@ const BoardWrapper = styled.div`
     text-align: center;
     padding: 20px;
   }
+`;
 
-  button {
-    margin-top: auto;
-  }
+const DropArea = styled.div<{ $isDraggingOver: boolean }>`
+  padding: 10px;
+  flex-grow: 1;
+  background-color: ${(props) =>
+    props.$isDraggingOver ? "skyblue" : "inherit"};
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 20px;
 `;

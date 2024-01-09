@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import "./App.css";
 import { Card, Data } from "./types/common";
-import Board from "./Board";
+import Board from "./components/Board";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Droppable } from "react-beautiful-dnd";
@@ -131,6 +131,30 @@ function App() {
     }));
   };
 
+  const handleEditCard = (boardId: string, card: Card) => {
+    const newBoards = data.boards.map((board) => {
+      if (board.id === boardId) {
+        return {
+          ...board,
+          cards: board.cards.map((c) => {
+            if (c.id === card.id) {
+              return card;
+            }
+
+            return c;
+          }),
+        };
+      }
+
+      return board;
+    });
+
+    setData({
+      ...data,
+      boards: newBoards,
+    });
+  };
+
   const handleAddCard = (boardId: string, card: Card) => {
     const newBoards = data.boards.map((board) => {
       if (board.id === boardId) {
@@ -180,8 +204,9 @@ function App() {
                   <Board
                     board={board}
                     key={index}
-                    onAddCard={handleAddCard}
                     index={index}
+                    onAddCard={handleAddCard}
+                    onEditCard={handleEditCard}
                   />
                 ))}
 
@@ -205,9 +230,7 @@ const AppWrapper = styled.div`
   width: 100vw;
   height: 100vh;
   background-image: "url('https://source.unsplash.com/random')";
-
   padding: 20px;
-
   display: flex;
   flex-direction: column;
   align-items: start;
