@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from "uuid";
 
 import "./App.css";
-import { Data } from "./types/common";
+import { Card, Data } from "./types/common";
 import Board from "./Board";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -27,7 +27,16 @@ const initialData: Data = {
 };
 
 function App() {
-  const [data, setData] = useState<Data>(initialData);
+  const originalData = useMemo(() => {
+    const data = localStorage.getItem("data");
+    if (data) {
+      return JSON.parse(data);
+    }
+
+    return initialData;
+  }, []);
+
+  const [data, setData] = useState<Data>(originalData);
 
   const handleDropCard = (
     source: DraggableLocation,
@@ -101,7 +110,7 @@ function App() {
   };
 
   const handleResetData = () => {
-    setData(() => initialData);
+    setData(() => originalData);
   };
 
   const handleSaveData = () => {
@@ -122,17 +131,12 @@ function App() {
     }));
   };
 
-  const handleAddCard = (boardId: string) => {
-    const newCard = {
-      id: `card-${uuidv4()}`,
-      text: "New card",
-    };
-
+  const handleAddCard = (boardId: string, card: Card) => {
     const newBoards = data.boards.map((board) => {
       if (board.id === boardId) {
         return {
           ...board,
-          cards: [...board.cards, newCard],
+          cards: [...board.cards, card],
         };
       }
 
