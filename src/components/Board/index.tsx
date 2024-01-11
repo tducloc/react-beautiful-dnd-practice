@@ -4,21 +4,32 @@ import styled from "styled-components";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { useRef, useState } from "react";
 import CardForm from "components/Card/CardForm";
+import Title from "./Title";
 
 const Board = ({
   board,
   index,
+  onEditTitle,
+  onDeleteBoard,
   onAddCard,
   onEditCard,
+  onDeleteCard,
 }: {
   board: Board;
   index: number;
+  onEditTitle: (boardId: string, title: string) => void;
+  onDeleteBoard: (boardId: string) => void;
   onAddCard: (boardId: string, card: Card) => void;
   onEditCard: (boardId: string, card: Card) => void;
+  onDeleteCard: (boardId: string, cardId: string) => void;
 }) => {
   const [newCard, setNewCard] = useState<Card | null>(null);
 
   const boardRef = useRef<HTMLDivElement>(null);
+
+  const handleDeleteCard = (cardId: string) => {
+    onDeleteCard(board.id, cardId);
+  };
 
   const handleClickAddCard = () => {
     setNewCard({
@@ -54,6 +65,14 @@ const Board = ({
     });
   };
 
+  const handleSaveTitle = (title: string) => {
+    onEditTitle(board.id, title);
+  };
+
+  const handleDeleteBoard = () => {
+    onDeleteBoard(board.id);
+  };
+
   const renderInput = (newCard: Card) => {
     return (
       <CardForm
@@ -72,7 +91,13 @@ const Board = ({
             {...dragProvided.draggableProps}
             ref={dragProvided.innerRef}
           >
-            <h2 {...dragProvided.dragHandleProps}>{board.name}</h2>
+            <div {...dragProvided.dragHandleProps}>
+              <Title
+                title={board.name}
+                onSaveTitle={handleSaveTitle}
+                onDeleteBoard={handleDeleteBoard}
+              />
+            </div>
             <Droppable droppableId={board.id} type="card">
               {(provided, snapshot) => (
                 <DropArea
@@ -86,6 +111,7 @@ const Board = ({
                       card={card}
                       index={index}
                       onSaveEditCard={handleSaveEditCard}
+                      onDeleteCard={handleDeleteCard}
                     />
                   ))}
 
@@ -122,12 +148,6 @@ const BoardWrapper = styled.div`
   flex-direction: column;
   border-radius: 8px;
   margin-left: 20px;
-
-  h2 {
-    user-select: none;
-    text-align: center;
-    padding: 20px;
-  }
 `;
 
 const DropArea = styled.div<{ $isDraggingOver: boolean }>`

@@ -8,10 +8,12 @@ const Card = ({
   card,
   index,
   onSaveEditCard,
+  onDeleteCard,
 }: {
   card: Card;
   index: number;
   onSaveEditCard: (card: Card) => void;
+  onDeleteCard: (cardId: string) => void;
 }) => {
   const [isEdit, setIsEdit] = useState(false);
   const [value, setValue] = useState(card.text);
@@ -21,7 +23,12 @@ const Card = ({
   };
 
   const handleClickEdit = () => {
+    console.log("here");
     setIsEdit(true);
+  };
+
+  const handleClickDelete = () => {
+    onDeleteCard(card.id);
   };
 
   const handleSaveChanges = () => {
@@ -52,17 +59,19 @@ const Card = ({
     );
 
   return (
-    <Draggable draggableId={card.id} index={index} key={card.id}>
+    <Draggable draggableId={card.id} index={index}>
       {(provided) => (
-        <CardWrapper ref={provided.innerRef} {...provided.draggableProps}>
-          <CardDragHandle {...provided.dragHandleProps}>
-            {card.text}
-          </CardDragHandle>
+        <CardWrapper
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+        >
+          <CardDragHandle>{card.text}</CardDragHandle>
 
-          <EditButton
-            className="fas fa-pen"
-            onClick={handleClickEdit}
-          ></EditButton>
+          <ActionButtonsWrapper>
+            <ActionButton className="fas fa-pen" onClick={handleClickEdit} />
+            <ActionButton className="fa fa-x" onClick={handleClickDelete} />
+          </ActionButtonsWrapper>
         </CardWrapper>
       )}
     </Draggable>
@@ -85,6 +94,7 @@ const CardWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 `;
 
 const CardDragHandle = styled.div`
@@ -94,13 +104,30 @@ const CardDragHandle = styled.div`
   user-select: none;
 `;
 
-const EditButton = styled.i`
-  position: relative;
+const ActionButtonsWrapper = styled.div`
+  display: none;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  padding: 4px;
+  z-index: 1;
+  height: 100%;
+
+  ${CardWrapper}:hover & {
+    display: flex;
+    flex-direction: column;
+  }
+`;
+
+const ActionButton = styled.i`
   cursor: pointer;
-  z-index: 2;
-  margin: 20px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  display: block;
 
   &:hover {
-    color: #0079bf;
+    background-color: #333;
+    color: #fff;
   }
 `;

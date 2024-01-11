@@ -173,6 +173,51 @@ function App() {
     });
   };
 
+  const handleDeleteCard = (boardId: string, cardId: string) => {
+    const newBoards = data.boards.map((board) => {
+      if (board.id === boardId) {
+        return {
+          ...board,
+          cards: board.cards.filter((card) => card.id !== cardId),
+        };
+      }
+
+      return board;
+    });
+
+    setData({
+      ...data,
+      boards: newBoards,
+    });
+  };
+
+  const handleDeleteBoard = (boardId: string) => {
+    const newBoards = data.boards.filter((board) => board.id !== boardId);
+
+    setData({
+      ...data,
+      boards: newBoards,
+    });
+  };
+
+  const handleEditBoardTitle = (boardId: string, title: string) => {
+    const newBoards = data.boards.map((board) => {
+      if (board.id === boardId) {
+        return {
+          ...board,
+          name: title,
+        };
+      }
+
+      return board;
+    });
+
+    setData({
+      ...data,
+      boards: newBoards,
+    });
+  };
+
   useEffect(() => {
     const data = localStorage.getItem("data");
     if (data) {
@@ -207,6 +252,9 @@ function App() {
                     index={index}
                     onAddCard={handleAddCard}
                     onEditCard={handleEditCard}
+                    onDeleteCard={handleDeleteCard}
+                    onEditTitle={handleEditBoardTitle}
+                    onDeleteBoard={handleDeleteBoard}
                   />
                 ))}
 
